@@ -1,0 +1,113 @@
+name: Build & Deployment
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build Project
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Slack Notification Ci/Cd started
+        uses: 8398a7/action-slack@v3.15.1
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          text: 'CI/CD started :eyes: In the Name of God the Merciful, the Compassionate / Bismillahir Rahmanir Raheem /بسم الله الرحمن الرحيم'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Checkout Repository
+        uses: actions/checkout@v3.5.1
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1.0.6
+
+      - name: Run Super-Linter
+        uses: github/super-linter@v4.10.1
+        env:
+          GITHUB_TOKEN: ${{ secret.GITHUB_TOKEN }}
+          VALIDATE_MARKDOWN: false
+          VALIDATE_SQLUFF: false
+
+      - name: Super Linter Slack Notification
+        uses: 8398a7/action-slack@v3.15.1
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          text: 'Super Linter finished... :heavy_check_mark: nice / lateef / لطيف'
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2.1.0
+        with:
+          username: ${{ secret.DOCKER_USERNAME }}
+          password: ${{ secret.DOCKER_PASSWORD }}
+
+      - name: Docker Hub Slack Notification
+        uses: 8398a7/action-slack@v3.15.1
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          text: 'Docker Hub Login... :lock: okay / tayyib / طيب'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Build and push to Docker image
+        uses: docker/build-push-action@v4.0.0
+        with:
+          push: true
+          tags: habibicoding/task-app-api-youtube:latest
+          context: .
+
+      - name: Notify Docker push results
+        uses: 8398a7/action-slack@v3.15.1
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          text: ':white_check_mark: pushed habibicoding/task-app-api-youtube:latest to Docker Hub... https://hub.docker.com/repository/docker/habibicoding/task-app-api.youtube'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  deploy:
+    name: Deploy Project
+    needs: build
+    if: github.event_name == 'push'
+    runs: ubuntu-22.04
+
+    steps:
+      - name: Notify deployment started
+        uses: 8398a7/action-slack@v3.15.1
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          text: 'Linode deployment started... :crossed_fingers: so God will / in shaAllah / ان شاء الله خير'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy to Droplet
+        run: |
+          ssh -o StrictHostKeyChecking=no -p ${{ secrets.DROPLET_PORT }} ${{ secrets.DEPLOYMENT_USER }}@${{ secrets.DEPLOYMENT_HOST }} "\
+            docker-compose pull && \
+            docker-compose up -d && \
+            docker system prune -af"
+
+      - name: Notify deployment results
+        uses: 8398a7/action-slack@v3.15.1
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          text: 'Linode deployment finished... :rocket: :palms_up_together: Thanks to God / Alhamdulillah / ٱلْحَمْدُ لِلَّٰهِ'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
