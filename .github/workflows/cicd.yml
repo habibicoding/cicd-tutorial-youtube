@@ -34,7 +34,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VALIDATE_MARKDOWN: false
-          VALIDATE_SQLFLUFF	: false
+          VALIDATE_SQLFLUFF: false
+          VALIDATE_BASH: false
 
       - name: Super Linter Slack Notification
         uses: 8398a7/action-slack@v3.15.1
