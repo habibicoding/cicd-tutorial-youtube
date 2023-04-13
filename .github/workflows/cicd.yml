@@ -34,7 +34,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VALIDATE_MARKDOWN: false
-          VALIDATE_SQLUFF: false
+          VALIDATE_SQLFLUFF	: false
 
       - name: Super Linter Slack Notification
         uses: 8398a7/action-slack@v3.15.1
@@ -78,7 +78,7 @@ jobs:
     name: Deploy Project
     needs: build
     if: github.event_name == 'push'
-    runs: ubuntu-22.04
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Notify deployment started
@@ -91,7 +91,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Setup SSH agent
-        uses: webfactory/ssh-agent@0.7.0
+        uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
