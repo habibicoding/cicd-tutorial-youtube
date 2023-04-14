@@ -20,10 +20,10 @@ RUN groupadd -r app && useradd --no-log-init -r -g app app
 WORKDIR /app
 
 # Copy the compiled JAR file from the builder stage
-COPY --from=builder /build/build/libs/cicd-tutorial-youtube-0.0.1-SNAPSHOT.jar.jar task-app-api.jar
+COPY --from=builder /build/build/libs/cicd-tutorial-youtube-0.0.1-SNAPSHOT.jar task-app-api-youtube.jar
 
 # Use the created user
 USER app
 
 # Set the entrypoint command
-ENTRYPOINT ["java", "-jar", "task-app-api.jar"]
+ENTRYPOINT ["java", "-jar", "task-app-api-youtube.jar"]
