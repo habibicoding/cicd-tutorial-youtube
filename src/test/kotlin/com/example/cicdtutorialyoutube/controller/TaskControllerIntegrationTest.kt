@@ -182,19 +182,19 @@ internal class TaskControllerIntegrationTest(@Autowired private val mockMvc: Moc
                 .content(mapper.writeValueAsString(request))
         )
 
-        resultActions.andExpect(MockMvcResultMatchers.status().`is`(200))
+        resultActions.andExpect(MockMvcResultMatchers.status().`is`(201))
         resultActions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
         resultActions.andExpect(jsonPath("$.isTaskOpen").value(taskDto.isTaskOpen))
     }
 
     @Test
     fun `given id for delete request when delete task is performed then check for the message`() {
-        val expectedMessage = "Task with id: $taskId has been deleted."
+        val expectedHeaderValue = "Task with id: $taskId has been deleted."
 
-        `when`(mockService.deleteTask(taskId)).thenReturn(expectedMessage)
+        `when`(mockService.deleteTask(taskId)).thenReturn(expectedHeaderValue)
         val resultActions: ResultActions = mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/tasks/$taskId"))
 
-        resultActions.andExpect(MockMvcResultMatchers.status().`is`(200))
-        resultActions.andExpect(content().string(expectedMessage))
+        resultActions.andExpect(MockMvcResultMatchers.status().`is`(204))
+        resultActions.andExpect(MockMvcResultMatchers.header().string("delete-task-header", expectedHeaderValue))
     }
 }
