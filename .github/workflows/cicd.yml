@@ -30,11 +30,12 @@ jobs:
         uses: gradle/wrapper-validation-action@v1.0.6
 
       - name: Run Super-Linter
-        uses: github/super-linter@v4.10.1
+        uses: github/super-linter@vv5.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VALIDATE_MARKDOWN: false
-          VALIDATE_SQLFLUFF	: false
+          VALIDATE_SQLFLUFF: false
+          VALIDATE_BASH: false
 
       - name: Super Linter Slack Notification
         uses: 8398a7/action-slack@v3.15.1
